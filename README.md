@@ -14,6 +14,7 @@ A shell script to automate merges between branches and create pull requests usin
 - Supports `--dry-run` mode to simulate operations
 - Skips creating duplicate PRs if one already exists
 - Supports optional `--auto-merge` flag to auto-merge the PR after passing checks
+- Supports `--verbose` / `-v` flag to show detailed Git output (default: quiet)
 
 ## 📦 Requirements
 
@@ -26,7 +27,7 @@ A shell script to automate merges between branches and create pull requests usin
 ```bash
 ./promote-to-env.sh --target <TARGET_BRANCH> --source <SOURCE_BRANCH> \
   [--body-file FILE.md | --body "Markdown text"] \
-  [--remote origin] [--merge-strategy merge] [--auto-merge] [--dry-run] [REPO_PATH]
+  [--remote origin] [--merge-strategy merge] [--auto-merge] [--dry-run] [--verbose] [REPO_PATH]
 ```
 
 ### 🔤 Flags
@@ -41,6 +42,7 @@ A shell script to automate merges between branches and create pull requests usin
 | `--merge-strategy` | Optional: `merge` (default), `rebase`, or `ff`                  | `--merge-strategy rebase` |
 | `--auto-merge`     | Optional: Auto-merge the PR once checks pass                    | `--auto-merge`            |
 | `--dry-run`        | Optional: Show what would happen without performing any changes | `--dry-run`               |
+| `--verbose`, `-v`  | Optional: Show verbose Git output                               | `--verbose`               |
 | `REPO_PATH`        | Optional: Path to local Git repo (as last positional argument)  | `./my-repo`               |
 
 ## 📝 PR Body Template
@@ -70,7 +72,7 @@ Assigned to: @me
 ## 🔁 Example
 
 ```bash
-./merge-to-env.sh -t int -s main --merge-strategy rebase --body-file .github/pr.md --auto-merge ./repo
+./merge-to-env.sh -t int -s main --merge-strategy rebase --body-file .github/pr.md --auto-merge --verbose ./repo
 ```
 
 This will:
@@ -81,6 +83,7 @@ This will:
 - Open a PR with the provided markdown as body
 - Assign it to the current user
 - Enable auto-merge if checks pass
+- Show Git command output
 - Output the PR URL
 
 ## 🛉 Cleanup

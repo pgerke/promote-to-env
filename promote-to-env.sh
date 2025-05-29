@@ -11,6 +11,7 @@ DRY_RUN=false
 REPO_PATH=""
 MERGE_STRATEGY="merge"
 AUTO_MERGE=false
+VERBOSE=false
 
 # --- Argument parsing ---
 POSITIONAL=()
@@ -46,6 +47,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --auto-merge)
       AUTO_MERGE=true
+      shift
+      ;;
+    --verbose|-v)
+      VERBOSE=true
       shift
       ;;
     *)
@@ -92,6 +97,9 @@ if [[ -n "$REPO_PATH" ]]; then
 fi
 
 NEW_BRANCH="merge-to-${TARGET_BRANCH}"
+GIT_QUIET=""
+GIT_NO_PAGER=""
+$VERBOSE || { GIT_QUIET="--quiet"; GIT_NO_PAGER="--no-pager"; }
 
 # --- Dry run output ---
 if $DRY_RUN; then
@@ -101,31 +109,32 @@ if $DRY_RUN; then
   echo "Would apply merge strategy: $MERGE_STRATEGY"
   echo "Would push $NEW_BRANCH and create PR"
   echo "Would auto-merge: $AUTO_MERGE"
+  echo "Would show verbose git output: $VERBOSE"
   exit 0
 fi
 
 # --- Git operations ---
 echo "🚀 Using remote: $REMOTE"
-git fetch "$REMOTE" "$TARGET_BRANCH"
-git checkout -B "$NEW_BRANCH" "$REMOTE/$TARGET_BRANCH"
-git fetch "$REMOTE" "$SOURCE_BRANCH"
+git $GIT_NO_PAGER fetch $GIT_QUIET "$REMOTE" "$TARGET_BRANCH"
+git $GIT_NO_PAGER checkout $GIT_QUIET -B "$NEW_BRANCH" "$REMOTE/$TARGET_BRANCH"
+git $GIT_NO_PAGER fetch $GIT_QUIET "$REMOTE" "$SOURCE_BRANCH"
 
 # --- Apply merge strategy ---
 echo "🔀 Applying merge strategy: $MERGE_STRATEGY"
 if [[ "$MERGE_STRATEGY" == "ff" ]]; then
-  if ! git merge --ff-only "$REMOTE/$SOURCE_BRANCH"; then
+  if ! git $GIT_NO_PAGER merge $GIT_QUIET --ff-only "$REMOTE/$SOURCE_BRANCH"; then
     echo "❌ Fast-forward merge not possible. Use --merge-strategy rebase or merge."
     exit 1
   fi
 elif [[ "$MERGE_STRATEGY" == "rebase" ]]; then
-  git rebase "$REMOTE/$SOURCE_BRANCH"
+  git $GIT_NO_PAGER rebase $GIT_QUIET "$REMOTE/$SOURCE_BRANCH"
 elif [[ "$MERGE_STRATEGY" == "merge" ]]; then
-  git merge --no-ff "$REMOTE/$SOURCE_BRANCH" -m "Merge $SOURCE_BRANCH into $NEW_BRANCH"
+  git $GIT_NO_PAGER merge $GIT_QUIET --no-ff "$REMOTE/$SOURCE_BRANCH" -m "Merge $SOURCE_BRANCH into $NEW_BRANCH"
 fi
 
 # --- Push branch ---
 echo "📤 Pushing branch $NEW_BRANCH..."
-git push -u "$REMOTE" "$NEW_BRANCH"
+git $GIT_NO_PAGER push $GIT_QUIET -u "$REMOTE" "$NEW_BRANCH"
 
 # --- Check for existing PR ---
 if gh pr list --head "$NEW_BRANCH" --json url --jq '.[].url' | grep -q .; then
