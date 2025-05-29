@@ -10,6 +10,7 @@ BODY=""
 DRY_RUN=false
 REPO_PATH=""
 MERGE_STRATEGY="merge"
+AUTO_MERGE=false
 
 # --- Argument parsing ---
 POSITIONAL=()
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=true
+      shift
+      ;;
+    --auto-merge)
+      AUTO_MERGE=true
       shift
       ;;
     *)
@@ -95,6 +100,7 @@ if $DRY_RUN; then
   echo "Would create branch $NEW_BRANCH"
   echo "Would apply merge strategy: $MERGE_STRATEGY"
   echo "Would push $NEW_BRANCH and create PR"
+  echo "Would auto-merge: $AUTO_MERGE"
   exit 0
 fi
 
@@ -149,5 +155,10 @@ PR_URL=$(gh pr create \
 
 [[ -n "${TEMP_BODY:-}" ]] && rm -f "$TEMP_BODY"
 
-# --- Output PR URL ---
 echo "✅ PR created: $PR_URL"
+
+# --- Auto merge ---
+if $AUTO_MERGE; then
+  echo "🔁 Enabling auto-merge for PR..."
+  gh pr merge "$PR_URL" --merge --auto
+fi
