@@ -11,7 +11,3 @@ This is part of our regular promotion pipeline.
 - Source branch: `SOURCE_BRANCH`
 - Target branch: `TARGET_BRANCH`
 - Merge type: fast-forward only
-
-### 🙋‍♂️ Assignee
-
-Assigned to: @me
