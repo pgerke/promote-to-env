@@ -72,7 +72,7 @@ Assigned to: @me
 ## 🔁 Example
 
 ```bash
-./merge-to-env.sh -t int -s main --merge-strategy rebase --body-file .github/pr.md --auto-merge --verbose ./repo
+./promote-to-env.sh -t int -s main --merge-strategy rebase --body-file .github/pr.md --auto-merge --verbose ./repo
 ```
 
 This will:
